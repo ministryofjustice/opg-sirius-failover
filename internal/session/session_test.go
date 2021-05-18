@@ -10,36 +10,36 @@ import (
 )
 
 func TestNewSession(t *testing.T) {
-	tests := []struct {
-		region     *string
+	testCases := []struct {
+		region     string
 		role       *string
 		wantRegion string
 		wantErr    bool
 	}{
-		{nil, nil, "eu-west-1", false},
-		{aws.String(""), nil, "eu-west-1", false},
-		{aws.String("us-west-1"), nil, "us-west-1", false},
-		{nil, aws.String("some-iam-role"), "eu-west-1", false},
+		{"eu-west-1", nil, "eu-west-1", false},
+		{"", nil, "eu-west-1", false},
+		{"us-west-1", nil, "us-west-1", false},
+		{"", aws.String("some-iam-role"), "eu-west-1", false},
 	}
 
-	for _, test := range tests {
+	for _, tc := range testCases {
 		os.Unsetenv("AWS_REGION")
 		os.Unsetenv("AWS_IAM_ROLE")
 
-		if test.region != nil {
-			os.Setenv("AWS_REGION", *test.region)
+		if tc.region != "" {
+			os.Setenv("AWS_REGION", tc.region)
 		}
-		if test.role != nil {
-			os.Setenv("AWS_IAM_ROLE", *test.role)
+		if tc.role != nil {
+			os.Setenv("AWS_IAM_ROLE", *tc.role)
 		}
 
-		got, err := NewSession("eu-west-1")
-		if test.wantErr {
+		got, err := NewSession(tc.region)
+		if tc.wantErr {
 			assert.Error(t, err)
 		} else {
 			assert.Nil(t, err)
 		}
 		assert.IsType(t, new(session.Session), got.AwsSession)
-		assert.Equal(t, test.wantRegion, *got.AwsSession.Config.Region)
+		assert.Equal(t, tc.wantRegion, *got.AwsSession.Config.Region)
 	}
 }

@@ -48,7 +48,7 @@ type RDSService struct {
 
 func main() {
 	flag.Usage = func() {
-		fmt.Println("Usage: failover -env <environment>")
+		fmt.Println("Usage: sirius-failover -env <environment>")
 		flag.PrintDefaults()
 	}
 
@@ -77,10 +77,15 @@ func main() {
 
 	params := getRequiredParms(sess, environment)
 
-	fmt.Print(params)
-	// failoverDNS(sess, params)
-	// failoverCluster(sess, p.Environment+"-membrane-global", "arn:aws:rds:eu-west-2:"+p.AccountID+":cluster:membrane-"+p.Environment)
-	// failoverCluster(sess, p.Environment+"-api-global", "arn:aws:rds:eu-west-2:"+p.AccountID+":cluster:api-"+p.Environment)
+	r53 := Route53Service{
+		Client: route53.New(sess.AwsSession),
+	}
+	r53.FailoverDNS(params)
+	rds := RDSService{
+		Client: rds.New(sess.AwsSession),
+	}
+	rds.FailoverCluster(params.Environment+"-membrane-global", "arn:aws:rds:eu-west-2:"+params.AccountID+":cluster:membrane-"+params.Environment)
+	rds.FailoverCluster(params.Environment+"-api-global", "arn:aws:rds:eu-west-2:"+params.AccountID+":cluster:api-"+params.Environment)
 }
 
 func yesNo() bool {
@@ -210,7 +215,6 @@ func (r *Route53Service) FailoverDNS(p Params) {
 	fmt.Printf("%s has started to failover", *res.ChangeInfo.Id)
 }
 
-// Failover a global cluster
 func (r *RDSService) FailoverCluster(g string, t string) {
 	_, err := r.Client.FailoverGlobalCluster(&rds.FailoverGlobalClusterInput{
 		GlobalClusterIdentifier:   aws.String(g),

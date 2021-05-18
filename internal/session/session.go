@@ -13,8 +13,13 @@ type Session struct {
 }
 
 func NewSession(region string) (*Session, error) {
+	awsRegion := region
 
-	sess, err := session.NewSession(&aws.Config{Region: &region})
+	if awsRegion == "" {
+		awsRegion = "eu-west-1"
+	}
+
+	sess, err := session.NewSession(&aws.Config{Region: &awsRegion})
 	if err != nil {
 		return nil, err
 	}
