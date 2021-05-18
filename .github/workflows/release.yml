@@ -2,7 +2,7 @@ name: Release with goreleaser
 on:
   push:
     branches:
-      - master
+      - main
 
 jobs:
   build:
