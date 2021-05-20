@@ -119,7 +119,7 @@ func getRequiredParms(s *session.Session, environment string) Params {
 	r53 := Route53Service{
 		Client: route53.New(s.AwsSession),
 	}
-	r53.LookupHostedZone(p.RecordName)
+	p.HostedZone = r53.LookupHostedZone(p.RecordName)
 
 	dnsl, hzl := lookupLoadBalancer(p.Environment, "eu-west-2")
 	p.LBHostedZoneLondon = dnsl
@@ -162,14 +162,16 @@ func (r *Route53Service) LookupHostedZone(name string) string {
 	if len(res.HostedZones) == 1 {
 		z := res.HostedZones[0]
 		id := strings.SplitAfter(*z.Id, "/hostedzone/")
-		return id[0]
+		return id[1]
 	}
+
 	return "Did not get hosted zone"
 }
 
 func (r *Route53Service) FailoverDNS(p Params) {
 
 	params := &route53.ChangeResourceRecordSetsInput{
+		HostedZoneId: aws.String(p.HostedZone),
 		ChangeBatch: &route53.ChangeBatch{ // Required
 			Changes: []*route53.Change{ // Required
 				{
@@ -203,13 +205,13 @@ func (r *Route53Service) FailoverDNS(p Params) {
 			},
 			Comment: aws.String("Failing over to london"),
 		},
-		HostedZoneId: aws.String(p.HostedZone),
 	}
 
 	res, err := r.Client.ChangeResourceRecordSets(params)
 
 	if err != nil {
 		fmt.Println(err)
+		return
 	}
 
 	fmt.Printf("%s has started to failover", *res.ChangeInfo.Id)
@@ -244,8 +246,6 @@ func lookupLoadBalancer(name string, region string) (string, string) {
 	if err != nil {
 		fmt.Println(err)
 	}
-
-	fmt.Print(res)
 
 	lb := res.LoadBalancers[0]
 
