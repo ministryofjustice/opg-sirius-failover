@@ -76,7 +76,7 @@ func TestRoute53Service_LookupHostedZone(t *testing.T) {
 					{
 						CallerReference:        aws.String("Call Ref 1"),
 						Name:                   aws.String("test.service.com"),
-						Id:                     aws.String("Z12345678"),
+						Id:                     aws.String("/hostedzone/Z12345678"),
 						ResourceRecordSetCount: aws.Int64(2),
 					},
 				},
