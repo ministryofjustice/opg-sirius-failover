@@ -49,7 +49,12 @@ jobs:
         run: go build -mod vendor ./cmd/failover
 
       - name: Extract branch name
-        run: echo BRANCH_NAME=${{ github.head_ref }} >> $GITHUB_ENV
+        run: |
+          if [ "$GITHUB_EVENT_NAME" == "push" ]; then
+            echo BRANCH_NAME=main >> $GITHUB_ENV
+          else
+            echo BRANCH_NAME=${{ github.head_ref }} >> $GITHUB_ENV
+          fi
 
       - name: Bump version
         id: bump_version
