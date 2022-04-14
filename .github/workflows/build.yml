@@ -13,8 +13,8 @@ defaults:
     shell: bash
 
 jobs:
-  test:
-    name: Build & Test
+  build_and_release:
+    name: Build And Release
     runs-on: ubuntu-latest
     outputs:
       tag: ${{ steps.bump_version.outputs.tag }}
@@ -50,34 +50,54 @@ jobs:
 
       - name: Extract branch name
         run: echo BRANCH_NAME=${{ github.head_ref }} >> $GITHUB_ENV
+      
+      - uses: actions/checkout@v1
+        with:
+          fetch-depth: '0'
 
-      - name: Bump version
-        id: bump_version
+      - name: Bump version and push tag
         uses: anothrNick/github-tag-action@1.36.0
+        id: create_tag
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           INITIAL_VERSION: 1.0.0
           DEFAULT_BUMP: minor
-          WITH_V: true
           RELEASE_BRANCHES: main
-          PRERELEASE_SUFFIX: ${{ env.BRANCH_NAME }}
-
-  release:
-    runs-on: ubuntu-latest
-    name: Release
-    needs: test
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    steps:
-      - uses: actions/checkout@v1
+          WITH_V: true
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          fetch-depth: "0"
-      - uses: actions/setup-go@v1
-        with:
-          go-version: 1.14
-        
+          tag_name: ${{ steps.create_tag.outputs.new_tag }}
+          release_name: ${{ steps.create_tag.outputs.new_tag }}
+          draft: false
+          prerelease: false
       - name: goreleaser
-        uses: goreleaser/goreleaser-action@v2
+        uses: goreleaser/goreleaser-action@master
         with:
           args: release
         env:
           GITHUB_TOKEN: ${{ secrets.access_token }}
+
+
+  # release:
+  #   runs-on: ubuntu-latest
+  #   name: Release
+  #   needs: test
+  #   if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+  #   steps:
+  #     - uses: actions/checkout@v1
+  #       with:
+  #         fetch-depth: "0"
+  #     - uses: actions/setup-go@v1
+  #       with:
+  #         go-version: 1.14
+        
+  #     - name: goreleaser
+  #       uses: goreleaser/goreleaser-action@v2
+  #       with:
+  #         args: release
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.access_token }}
