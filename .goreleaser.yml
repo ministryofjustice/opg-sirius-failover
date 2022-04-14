@@ -2,7 +2,7 @@
 project_name: opg-sirius-failover
 
 env_files:
-  github_token: ${{ secrets.access_token }}
+  github_token: ${{ secrets.GITHUB_TOKEN }}
 
 release:
   github:
@@ -24,15 +24,31 @@ archives:
       linux: Linux
       amd64: x86_64
 
-brews:
-  - name: sirius-failover
-    tap:
-      owner: ministryofjustice
-      name: homebrew-opg
-    folder: Formula
-    homepage: https://github.com/ministryofjustice/opg-sirius-failover
-    description: sirius-failover allows you to failover Sirius
-    install: bin.install "sirius-failover"
-    commit_author:
-      name: goreleaserbot
-      email: goreleaser@carlosbecker.com
+
+# builds:
+#   - binary: sirius-failover
+#     id: sirius-failover
+#     main: ./cmd/failover/main.go
+#     goarch:
+#       - amd64
+
+# archives:
+#   -
+#     name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}{{ if .Mips }}_{{ .Mips }}{{ end }}"
+#     replacements:
+#       darwin: Darwin
+#       linux: Linux
+#       amd64: x86_64
+
+# brews:
+#   - name: sirius-failover
+#     tap:
+#       owner: ministryofjustice
+#       name: homebrew-opg
+#     folder: Formula
+#     homepage: https://github.com/ministryofjustice/opg-sirius-failover
+#     description: sirius-failover allows you to failover Sirius
+#     install: bin.install "sirius-failover"
+#     commit_author:
+#       name: goreleaserbot
+#       email: goreleaser@carlosbecker.com
