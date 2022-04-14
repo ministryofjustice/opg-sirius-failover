@@ -11,6 +11,8 @@ go build -mod vendor ./cmd/failover
 
 MacOS:
 
+NOTE: Currently not publishing updated packages to brew, so this will be out of date.
+
 ```bash
 brew install ministryofjustice/opg/sirius-failover
 ```
