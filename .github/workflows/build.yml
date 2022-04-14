@@ -50,7 +50,8 @@ jobs:
 
       - name: Extract branch name
         run: echo BRANCH_NAME=${{ github.head_ref }} >> $GITHUB_ENV
-
+      
+      - uses: actions/checkout@v1
       - name: Bump version and push tag
         uses: anothrNick/github-tag-action@1.36.0
         id: create_tag
